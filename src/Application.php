@@ -29,23 +29,33 @@ use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * Application setup class.
  *
  * This defines the bootstrapping logic and middleware layers you
  * want to use in your application.
  */
-class Application extends BaseApplication
-{
+
+
     /**
      * Load all the application configuration and bootstrap logic.
      *
      * @return void
      */
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
+{
     public function bootstrap(): void
     {
         // Call parent to load bootstrap from files.
         parent::bootstrap();
+        $this->addPlugin('Migrations');
+        $this->addPlugin('Authentication');
 
         if (PHP_SAPI === 'cli') {
             $this->bootstrapCli();
@@ -61,7 +71,7 @@ class Application extends BaseApplication
          * Debug Kit should not be installed on a production system
          */
         if (Configure::read('debug')) {
-            $this->addPlugin('DebugKit');
+//            $this->addPlugin('DebugKit');
         }
 
         // Load more plugins here
@@ -75,6 +85,7 @@ class Application extends BaseApplication
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
+            
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
@@ -92,6 +103,7 @@ class Application extends BaseApplication
             // using it's second constructor argument:
             // `new RoutingMiddleware($this, '_cake_routes_')`
             ->add(new RoutingMiddleware($this))
+            
 
             // Parse various types of encoded request bodies so that they are
             // available as array through $request->getData()
@@ -103,6 +115,12 @@ class Application extends BaseApplication
             ->add(new CsrfProtectionMiddleware([
                 'httponly' => true,
             ]));
+
+        $middlewareQueue
+            // ... other middleware added before
+            ->add(new RoutingMiddleware($this))
+            // add Authentication after RoutingMiddleware
+            ->add(new AuthenticationMiddleware($this));
 
         return $middlewareQueue;
     }
@@ -136,5 +154,33 @@ class Application extends BaseApplication
         $this->addPlugin('Migrations');
 
         // Load more plugins here
+    }
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $authenticationService = new AuthenticationService([
+        'unauthenticatedRedirect' => '/users/login',
+        'queryParam' => 'redirect',
+    ]);
+
+        // Load identifiers, ensure we check email and password fields
+        $authenticationService->loadIdentifier('Authentication.Password', [
+        'fields' => [
+            'username' => 'email',
+            'password' => 'password',
+        ]
+    ]);
+
+        // Load the authenticators, you want session first
+        $authenticationService->loadAuthenticator('Authentication.Session');
+        // Configure form data check to pick email and password
+        $authenticationService->loadAuthenticator('Authentication.Form', [
+        'fields' => [
+            'username' => 'email',
+            'password' => 'password',
+        ],
+        'loginUrl' => '/users/login',
+    ]);
+
+        return $authenticationService;
     }
 }
