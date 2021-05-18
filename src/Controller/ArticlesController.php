@@ -14,17 +14,30 @@ class ArticlesController extends AppController
         parent::initialize();
 
         $this->loadComponent('Flash'); // Include the FlashComponent
+
+        //Rest Api code
+        $this->loadComponent('RequestHandler');
+        $this->Auth->allow(['index', 'view']);
+        //$this->viewBuilder()->setOption('serialize', true);
+
     }
 
     public function index()
     {
         $this->set('articles', $this->Articles->find()->all());
+        //Rest Api Code
+        $this->viewBuilder()->setOption('serialize', true);
+        $this->RequestHandler->renderAs($this, 'json');
     }
 
     public function view($id)
     {
         $article = $this->Articles->get($id);
         $this->set(compact('article'));
+
+        //Rest Api Code
+        $this->viewBuilder()->setOption('serialize', true);
+        $this->RequestHandler->renderAs($this, 'json');
     }
 
     public function add()
@@ -44,24 +57,12 @@ class ArticlesController extends AppController
         // one category for an article
         $categories = $this->Articles->Categories->find('treeList')->all();
         $this->set(compact('categories'));
+
+        //Rest Api code
+        $this->viewBuilder()->setOption('serialize', ['article']);
+
     }
 
-    /*
-    public function add()
-    {
-        $article = $this->Articles->newEmptyEntity();
-        if ($this->request->is('post')) {
-            $article = $this->Articles->patchEntity($article, $this->request->getData());
-            if ($this->Articles->save($article)) {
-                $this->Flash->success(__('Your article has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('Unable to add your article.'));
-        }
-        $this->set('article', $article);
-    }
-
-    */
     public function edit($id = null)
     {
         $article = $this->Articles->get($id);
@@ -75,6 +76,9 @@ class ArticlesController extends AppController
         }
 
         $this->set('article', $article);
+
+        //Rest Api code
+        $this->viewBuilder()->setOption('serialize', ['article']);
     }
 
     public function delete($id)
@@ -86,5 +90,18 @@ class ArticlesController extends AppController
             $this->Flash->success(__('The article with id: {0} has been deleted.', h($id)));
             return $this->redirect(['action' => 'index']);
         }
+
+        //Rest Api
+        $this->viewBuilder()->setOption('serialize', ['article']);
+    }
+
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        // for all controllers in our application, make index and view
+        // actions public, skipping the authentication check.
+        $this->Authentication->addUnauthenticatedActions(['index', 'view']);
+      
+
     }
 }

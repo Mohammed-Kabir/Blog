@@ -47,19 +47,6 @@ class UsersController extends AppController
 
             return $this->redirect($redirect);
         }
-        /*
-        if($this->request->is('post'))
-        {
-            $user = $this->Authentication->identify();
-            if($user){
-                $this->Authentication->setUser($user);
-                return $this->redirect(['controller'=>'Users','action'=>'index']);
-            }
-            else{
-                $this->Flash->error("incorrect email");
-            }
-        }
-        */
         
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && !$result->isValid()) {
@@ -76,6 +63,10 @@ class UsersController extends AppController
         $this->Authentication->addUnauthenticatedActions(['view']);
         $this->Authentication->addUnauthenticatedActions(['tags']);
     }
+
+
+
+
     public function logout()
     {
         $result = $this->Authentication->getResult();

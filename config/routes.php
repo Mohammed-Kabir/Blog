@@ -43,6 +43,20 @@ use Cake\Routing\RouteBuilder;
  */
 /** @var \Cake\Routing\RouteBuilder $routes */
 $routes->setRouteClass(DashedRoute::class);
+$routes->setExtensions(['json', 'xml']);
+
+
+$routes->prefix('api', function (RouteBuilder $route) {
+    $route->setExtensions(['json', 'xml']);
+    $route->resources('Articles');
+    $route->resources('Users');
+    // $routes->connect('/:controller/:action', ['prefix' =]) 
+    $route->connect('/api/users/register', ['controller' => 'Users', 'action' => 'add', 'prefix' => 'api']);
+    $route->fallbacks(DashedRoute::class);
+});
+
+
+
 
 $routes->scope('/', function (RouteBuilder $builder) {
     /*
@@ -71,7 +85,10 @@ $routes->scope('/', function (RouteBuilder $builder) {
      * routes you want in your application.
      */
     $builder->fallbacks();
+
+
 });
+
 
 /*
  * If you need a different set of middleware or none at all,
