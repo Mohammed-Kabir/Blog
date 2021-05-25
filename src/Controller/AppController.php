@@ -46,6 +46,7 @@ class AppController extends Controller
         $this->loadComponent('Flash');
         $this->loadComponent('Authentication.Authentication');
 
+        /*
         $this->loadComponent('Authentication', [
             'storage' => 'Memory',
             'authenticate' => [
@@ -65,6 +66,7 @@ class AppController extends Controller
             'unauthorizedRedirect' => false,
             'checkAuthIn' => 'Controller.initialize'
         ]);
+        */
     }
 
 

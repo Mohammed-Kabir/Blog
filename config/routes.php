@@ -48,17 +48,22 @@ $routes->setExtensions(['json', 'xml']);
 
 $routes->prefix('api', function (RouteBuilder $route) {
     $route->setExtensions(['json', 'xml']);
+    //*/
     $route->resources('Articles');
     $route->resources('Users');
     // $routes->connect('/:controller/:action', ['prefix' =]) 
     $route->connect('/api/users/register', ['controller' => 'Users', 'action' => 'add', 'prefix' => 'api']);
-    $route->fallbacks(DashedRoute::class);
+    //*/
+    //$route->fallbacks(DashedRoute::class);
+    $route->fallbacks('InflectedRoute');
 });
 
 
 
 
 $routes->scope('/', function (RouteBuilder $builder) {
+    $builder->setExtensions(['json']);
+    $builder->resources('Articles');
     /*
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
      * its action called 'display', and we pass a param to select the view file

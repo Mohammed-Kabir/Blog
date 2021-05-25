@@ -1,8 +1,7 @@
 <?php
 namespace App\Controller\Api;
 use Cake\Event\Event;
-//use Cake\Network\Exception\UnauthorizedException;
-use Cake\Http\Exception\UnauthorizedException;
+use Cake\Network\Exception\UnauthorizedException;
 use Cake\Utility\Security;
 use Firebase\JWT\JWT;
 
@@ -62,6 +61,32 @@ class UsersController extends AppController
         ]);
         $this->viewBuilder()->setOption('serialize', ['data']);
         $this->RequestHandler->renderAs($this, 'json');
-    }   
+    }
+    
+
+    /*
+    public function login()
+    {
+        $result = $this->Authentication->getResult();
+        // regardless of POST or GET, redirect if user is logged in
+        if ($result->isValid()) {
+            $user = $this->Authentication->identity();
+            $this->set('data', [
+                //'id' => $event->subject->entity->id,
+                'token' => JWT::encode(
+                    [
+                        'sub' => $user->id,
+                        'exp' =>  time() + 604800
+                    ],
+                    Security::getsalt()
+                )
+            ]);
+        }
+
+
+        //return $this->Crud->execute();
+    }
+    */
+
 
 }
